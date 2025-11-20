@@ -13,20 +13,13 @@
       win_shell: |
         $Password = ConvertTo-SecureString "{{ ad_password }}" -AsPlainText -Force
 
-        # Definir descripción con valor por defecto si la variable no existe
-        if (-not (Get-Variable ad_description -ErrorAction SilentlyContinue)) {
-          $Description = "Usuario creado desde AWX"
-        } else {
-          $Description = "{{ ad_description }}"
-        }
+        # Valor por defecto para descripción
+        $Description = "Usuario creado desde AWX"
 
-        # Definir OU con valor por defecto si la variable no existe
-        if (-not (Get-Variable ad_ou -ErrorAction SilentlyContinue)) {
-          $OU = "OU=Usuarios,DC=mingrat,DC=lab"
-        } else {
-          $OU = "{{ ad_ou }}"
-        }
+        # Valor por defecto para OU
+        $OU = "OU=Usuarios,DC=mingrat,DC=lab"
 
+        # Crear el usuario
         New-ADUser `
           -Name "{{ ad_username }}" `
           -SamAccountName "{{ ad_username }}" `
