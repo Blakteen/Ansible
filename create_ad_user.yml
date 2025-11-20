@@ -12,5 +12,4 @@
         name: "{{ username }}"
         password: "{{ password }}"
         state: present
-        description: "Usuario creado por No Solo Hacking dede Ansible"
-        groups: [] # No lo añade a grupos en este playbook
+        description: "Usuario creado por No Solo Hacking dede Ansible
