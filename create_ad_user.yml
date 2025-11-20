@@ -1,24 +1,25 @@
 ---
-- name: Crear un usuario local en Windows
+- name: Crear usuario en Active Directory
   hosts: all
   gather_facts: no
   vars:
-    username: "{{ new_user }}"                # Nombre de la cuenta (samAccountName) desde AWX
-    password: "{{ new_password }}"            # Contraseña desde AWX
-    logon_name: "{{ user_logon_name | default(omit) }}"  # Logon name opcional desde AWX
-    description: "{{ user_description | default('Usuario creado por Ansible') }}"  # Descripción
-    groups: "{{ user_groups | default(['Usuarios']) }}"  # Grupo(s) del usuario, por defecto 'Usuarios'
+    username: "{{ ad_username }}"                       # Nombre de cuenta (samAccountName)
+    password: "{{ ad_password }}"                       # Contraseña
+    logon_name: "{{ ad_logon_name }}"                   # UPN (usuario@dominio.local)
+    description: "{{ ad_description | default('Usuario creado por Ansible') }}"
+    groups: "{{ ad_groups | default([]) }}"             # Lista de grupos AD a los que se añadirá
+    ou: "{{ ad_ou | default('OU=Usuarios,DC=midominio,DC=local') }}"  # Unidad organizativa
+    enabled: true                                      # Estado del usuario
 
   tasks:
-    - name: Crear usuario local en Windows
-      ansible.windows.win_user:
+    - name: Crear usuario en Active Directory
+      ansible.windows.win_ad_user:
         name: "{{ username }}"
+        user_principal_name: "{{ logon_name }}"
         password: "{{ password }}"
-        state: present
+        enabled: "{{ enabled }}"
         description: "{{ description }}"
         groups: "{{ groups }}"
-        update_password: on_create
+        ou: "{{ ou }}"
+        change_password_at_logon: false
         password_never_expires: yes
-        user_cannot_change_password: no
-        user_principal_name: "{{ logon_name }}"
-
