@@ -3,14 +3,19 @@
   hosts: all
   gather_facts: no
   vars:
-    username: "{{ new_user }}"
-    password: "{{ new_password }}"
+    username: "{{ new_user }}"         # Definido en AWX
+    password: "{{ new_password }}"     # Definido en AWX
+    description: "{{ user_description | default('Usuario creado por Ansible') }}"
+    groups: "{{ user_groups | default(['Usuarios']) }}"  # Grupo por defecto
 
   tasks:
-    - name: Crear el usuario en Windows
+    - name: Crear usuario local en Windows
       ansible.windows.win_user:
         name: "{{ username }}"
         password: "{{ password }}"
         state: present
-        description: "Usuario creado por No Solo Hacking dede Ansible"
-        groups: [] # No lo añade a grupos en este playbook
+        description: "{{ description }}"
+        groups: "{{ groups }}"
+        update_password: on_create
+        password_never_expires: yes
+        user_cannot_change_password: no
