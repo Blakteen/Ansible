@@ -6,16 +6,27 @@
     ad_username: "{{ ad_username }}"
     ad_password: "{{ ad_password }}"
     ad_logon_name: "{{ ad_logon_name }}"
-    ad_description: "{{ ad_description | default('Usuario creado desde AWX') }}"
-    ad_groups: "{{ ad_groups | default([]) }}"
+    ad_groups: "{{ ad_groups | default([]) }}"  # opcional
 
   tasks:
     - name: Crear usuario en AD
       win_shell: |
         $Password = ConvertTo-SecureString "{{ ad_password }}" -AsPlainText -Force
-        # Definimos OU con valor por defecto si no se pasa variable
-        $OU = "{{ ad_ou | default('OU=Usuarios,DC=mingrat,DC=lab') }}"
-        if ([string]::IsNullOrEmpty($OU)) { $OU = "OU=Usuarios,DC=mingrat,DC=lab" }
+
+        # Lógica de default para la descripción
+        if (-not $env:AD_DESCRIPTION) {
+          $Description = "Usuario creado desde AWX"
+        } else {
+          $Description = "{{ ad_description }}"
+        }
+
+        # Lógica de default para OU
+        if (-not $env:AD_OU) {
+          $OU = "OU=Usuarios,DC=mingrat,DC=lab"
+        } else {
+          $OU = "{{ ad_ou }}"
+        }
+
         New-ADUser `
           -Name "{{ ad_username }}" `
           -SamAccountName "{{ ad_username }}" `
@@ -23,7 +34,7 @@
           -AccountPassword $Password `
           -Enabled $true `
           -Path $OU `
-          -Description "{{ ad_description }}" `
+          -Description $Description `
           -ChangePasswordAtLogon $false `
           -PasswordNeverExpires $true
       register: new_user
