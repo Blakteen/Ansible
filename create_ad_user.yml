@@ -7,7 +7,7 @@
     ad_password: "{{ ad_password }}"           # Contraseña en texto plano
     ad_logon_name: "{{ ad_logon_name }}"       # UPN, ejemplo: usuario@dominio.local
     ad_description: "{{ ad_description | default('Usuario creado desde AWX') }}"
-    ad_ou: "{{ ad_ou | default('OU=Usuarios,DC=mingrat,DC=lab') }}"
+    ad_ou: "{{ ad_ou | default("OU=Usuarios,DC=mingrat,DC=lab") }}"
     ad_groups: "{{ ad_groups | default([]) }}"  # Lista de grupos a los que agregar el usuario
 
   tasks:
