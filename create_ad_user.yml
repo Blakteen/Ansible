@@ -1,25 +1,38 @@
 ---
-- name: Crear usuario en Active Directory
+- name: Crear usuario en Active Directory usando PowerShell
   hosts: all
   gather_facts: no
   vars:
-    username: "{{ ad_username }}"                       # Nombre de cuenta (samAccountName)
-    password: "{{ ad_password }}"                       # Contraseña
-    logon_name: "{{ ad_logon_name }}"                   # UPN (usuario@dominio.local)
-    description: "{{ ad_description | default('Usuario creado por Ansible') }}"
-    groups: "{{ ad_groups | default([]) }}"             # Lista de grupos AD a los que se añadirá
-    ou: "{{ ad_ou | default('OU=Usuarios,DC=midominio,DC=local') }}"  # Unidad organizativa
-    enabled: true                                      # Estado del usuario
+    ad_username: "{{ ad_username }}"           # samAccountName
+    ad_password: "{{ ad_password }}"           # Contraseña en texto plano
+    ad_logon_name: "{{ ad_logon_name }}"       # UPN, ejemplo: usuario@dominio.local
+    ad_description: "{{ ad_description | default('Usuario creado desde AWX') }}"
+    ad_ou: "{{ ad_ou | default('OU=Usuarios,DC=mingrat,DC=lab') }}"
+    ad_groups: "{{ ad_groups | default([]) }}"  # Lista de grupos a los que agregar el usuario
 
   tasks:
-    - name: Crear usuario en Active Directory
-      ansible.windows.win_ad_user:
-        name: "{{ username }}"
-        user_principal_name: "{{ logon_name }}"
-        password: "{{ password }}"
-        enabled: "{{ enabled }}"
-        description: "{{ description }}"
-        groups: "{{ groups }}"
-        ou: "{{ ou }}"
-        change_password_at_logon: false
-        password_never_expires: yes
+    - name: Crear usuario en AD
+      win_shell: |
+        $Password = ConvertTo-SecureString "{{ ad_password }}" -AsPlainText -Force
+        New-ADUser `
+          -Name "{{ ad_username }}" `
+          -SamAccountName "{{ ad_username }}" `
+          -UserPrincipalName "{{ ad_logon_name }}" `
+          -AccountPassword $Password `
+          -Enabled $true `
+          -Path "{{ ad_ou }}" `
+          -Description "{{ ad_description }}" `
+          -ChangePasswordAtLogon $false `
+          -PasswordNeverExpires $true
+      register: new_user
+
+    - name: Agregar usuario a grupos
+      win_shell: |
+        {% for group in ad_groups %}
+        Add-ADGroupMember -Identity "{{ group }}" -Members "{{ ad_username }}"
+        {% endfor %}
+      when: ad_groups | length > 0
+
+    - name: Mostrar resultado
+      debug:
+        var: new_user
