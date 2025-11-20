@@ -1,6 +1,6 @@
 ---
 - name: Crear un usuario local en Windows
-  hosts: windows
+  hosts: all
   gather_facts: no
   vars:
     username: "{{ new_user }}"
