@@ -13,15 +13,15 @@
       win_shell: |
         $Password = ConvertTo-SecureString "{{ ad_password }}" -AsPlainText -Force
 
-        # Lógica de default para la descripción
-        if (-not $env:AD_DESCRIPTION) {
+        # Definir descripción con valor por defecto si la variable no existe
+        if (-not (Get-Variable ad_description -ErrorAction SilentlyContinue)) {
           $Description = "Usuario creado desde AWX"
         } else {
           $Description = "{{ ad_description }}"
         }
 
-        # Lógica de default para OU
-        if (-not $env:AD_OU) {
+        # Definir OU con valor por defecto si la variable no existe
+        if (-not (Get-Variable ad_ou -ErrorAction SilentlyContinue)) {
           $OU = "OU=Usuarios,DC=mingrat,DC=lab"
         } else {
           $OU = "{{ ad_ou }}"
