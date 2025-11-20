@@ -3,8 +3,8 @@
   hosts: windows
   gather_facts: no
   vars:
-    username: "usuario1"
-    password: "P@ssw0rd123"
+    username: "{{ new_user }}"
+    password: "{{ new_password }}"
 
   tasks:
     - name: Crear el usuario en Windows
