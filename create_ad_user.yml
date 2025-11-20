@@ -14,13 +14,15 @@
     - name: Crear usuario en AD
       win_shell: |
         $Password = ConvertTo-SecureString "{{ ad_password }}" -AsPlainText -Force
+        $OU = "{{ ad_ou }}"
+        if ([string]::IsNullOrEmpty($OU)) { $OU = "OU=Usuarios,DC=mingrat,DC=lab" }
         New-ADUser `
           -Name "{{ ad_username }}" `
           -SamAccountName "{{ ad_username }}" `
           -UserPrincipalName "{{ ad_logon_name }}" `
           -AccountPassword $Password `
           -Enabled $true `
-          -Path "{{ ad_ou }}" `
+          -Path $OU `
           -Description "{{ ad_description }}" `
           -ChangePasswordAtLogon $false `
           -PasswordNeverExpires $true
