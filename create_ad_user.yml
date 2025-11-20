@@ -7,14 +7,14 @@
     ad_password: "{{ ad_password }}"
     ad_logon_name: "{{ ad_logon_name }}"
     ad_description: "{{ ad_description | default('Usuario creado desde AWX') }}"
-    ad_ou: "{{ ad_ou | default('OU=Usuarios,DC=mingrat,DC=lab') }}"
     ad_groups: "{{ ad_groups | default([]) }}"
 
   tasks:
     - name: Crear usuario en AD
       win_shell: |
         $Password = ConvertTo-SecureString "{{ ad_password }}" -AsPlainText -Force
-        $OU = "{{ ad_ou }}"
+        # Definimos OU con valor por defecto si no se pasa variable
+        $OU = "{{ ad_ou | default('OU=Usuarios,DC=mingrat,DC=lab') }}"
         if ([string]::IsNullOrEmpty($OU)) { $OU = "OU=Usuarios,DC=mingrat,DC=lab" }
         New-ADUser `
           -Name "{{ ad_username }}" `
